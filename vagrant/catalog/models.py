@@ -15,7 +15,9 @@ secret_key = ''.join(random.choice(string.ascii_uppercase + string.digits) for x
 class User(Base):
     __tablename__ = 'user'
     id = Column(Integer, primary_key = True)
-    username = Column(String(32), index = True)
+    username = Column(String(250), nullable=False)
+    email = Column(String(250), index = True)
+    picture = Column(String(250))
     password_hash = Column(String(64))
     
     # Store hashed password for security reasons
@@ -54,7 +56,7 @@ class Item(Base):
     id = Column(Integer, primary_key = True)
     name = Column(String)
     description = Column(String)
-    category_id = Column(Integer, ForeignKey('category.id'))
+    category_name = Column(String, ForeignKey('category.name'))
     category = relationship(Category)
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship(User)
