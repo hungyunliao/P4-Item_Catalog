@@ -1,0 +1,22 @@
+{% extends "main.html" %}
+{% block content %}
+<form method="POST" action="{{ url_for('addItem') }}">
+    <p>
+        Title
+        <input type="text" name="item_name">
+    </p>
+    <p>
+        Description
+        <textarea name="item_description"></textarea>
+    </p>
+    <p>
+        Category
+        <select name="item_category">
+            {% for cate in categories %}
+            <option value="{{cate.name}}">{{cate.name}}</option>
+            {% endfor %}
+        </select>
+    </p>
+    <input type="submit" value="submit">
+</form>
+{% endblock %}

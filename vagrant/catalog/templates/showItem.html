@@ -1,0 +1,18 @@
+{% extends "main.html" %}
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <article>
+            <head>
+                {{item.name}}
+            </head>
+            <section>
+                {{item.description}}
+            </section>
+        </article>
+        {% if hideEdit != True %}
+        <a href="{{ url_for('editItem', item_name = item.name) }}">Edit</a>&nbsp;|&nbsp;<a href="{{ url_for('deleteItem', item_name = item.name ) }}">Delete</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

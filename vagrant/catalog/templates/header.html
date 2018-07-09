@@ -1,0 +1,16 @@
+<div class="row">
+	<div class="col-md-6">
+		<a href="{{url_for('showLatest')}}">
+			<span class="glyphicon glyphicon-home" aria-hidden="true"></span>Show lastest items
+		</a>
+	</div>
+	<div class="col-md-6">
+        {% if user_id != None %}
+            <p><a href="{{url_for('disconnect')}}">Logout</a></p>
+        {% elif hideLogin == True %}
+<!--            Intentionally left blank.-->
+        {% else %}
+            <p><a href="{{url_for('showLogin')}}">Login</a></p>
+        {% endif %}
+	</div>
+</div>
