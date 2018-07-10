@@ -7,11 +7,12 @@
         {% endfor %}
     </div>
     <div class="col-md-6">
-        {% if user_id != None %}
-            {{user_id}} Edit
+        {% if isLoggedIn %}
+        <a href="{{ url_for('addItem') }}">Add Item</a>
         {% endif %}
+        <p><strong>Latest Items</strong></p>
         {% for item in items %}
-            <li>{{item.name}} ({{item.category_name}})</li>
+            <li><a href="{{ url_for('showItems', category_name = item.category_name, item_name = item.name) }}">{{item.name}} ({{item.category_name}})</a></li>
         {% endfor %}
     </div>
 </div>

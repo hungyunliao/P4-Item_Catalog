@@ -45,11 +45,8 @@ def verify_passowrd(username_or_token, password):
 def showLatest():
     session = DBSession()
     categories = session.query(Category).all()
-    items = session.query(Item).all()
-    user_id = None
-    if 'email' in login_session:
-        user_id = getUserID(login_session['email'])
-    return render_template('showLatest.html', categories = categories, items = items, user_id = user_id)
+    items = session.query(Item).order_by("id desc").all()   # list the latest itmes chronologically
+    return render_template('showLatest.html', categories = categories, items = items, isLoggedIn = isLoggedIn(login_session))
     
 @app.route('/categories/<string:category_name>')
 @app.route('/categories/<string:category_name>/items')
@@ -57,19 +54,14 @@ def showCategoryItems(category_name):
     session = DBSession()
     categories = session.query(Category).all()
     items = session.query(Item).filter_by(category_name = category_name).all()
-    if isLoggedIn(login_session) is False:
-        return render_template('showCategories.html', categories = categories, items = items, user_id = None)
-    else:
-        return render_template('showCategories.html', categories = categories, items = items, user_id = login_session['user_id'])
+    return render_template('showCategories.html', categories = categories, items = items, isLoggedIn = isLoggedIn(login_session))
 
 @app.route('/categories/<string:category_name>/<string:item_name>')
 def showItems(category_name, item_name):
     session = DBSession()
     item = session.query(Item).filter_by(category_name = category_name, name = item_name).one()
-    if isLoggedIn(login_session) is False:
-        return render_template('showItem.html', item = item, hideEdit = True, user_id = None)
-    else:
-        return render_template('showItem.html', item = item, user_id = login_session['user_id'])
+    c_user_id = item.user_id
+    return render_template('showItem.html', item = item, hideEdit = True if c_user_id != login_session['user_id'] else False, isLoggedIn = isLoggedIn(login_session))
 
 def isLoggedIn(login_session):
     if 'user_id' not in login_session or login_session['user_id'] is None:
@@ -85,7 +77,7 @@ def addItem():
     else:
         if request.method == 'GET':
             categories = session.query(Category).all()
-            return render_template('add.html', categories = categories)
+            return render_template('add.html', categories = categories, isLoggedIn = isLoggedIn(login_session))
         if request.method == 'POST':
             item_name = request.form.get('item_name')
             item_description = request.form.get('item_description')
