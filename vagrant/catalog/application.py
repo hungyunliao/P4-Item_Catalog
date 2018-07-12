@@ -54,14 +54,16 @@ def showCategoryItems(category_name):
     session = DBSession()
     categories = session.query(Category).all()
     items = session.query(Item).filter_by(category_name = category_name).all()
-    return render_template('showCategories.html', categories = categories, items = items, isLoggedIn = isLoggedIn(login_session))
+    num_of_items = ("%s %s" % (len(items), ' items' if len(items) > 1 else ' item'))
+    return render_template('showCategories.html', categories = categories, items = items, isLoggedIn = isLoggedIn(login_session), category_name = category_name, num_of_items = num_of_items)
 
 @app.route('/categories/<string:category_name>/<string:item_name>')
 def showItems(category_name, item_name):
-    session = DBSession()
+    session = DBSession()    
     item = session.query(Item).filter_by(category_name = category_name, name = item_name).one()
     c_user_id = item.user_id
-    return render_template('showItem.html', item = item, hideEdit = True if c_user_id != login_session['user_id'] else False, isLoggedIn = isLoggedIn(login_session))
+    hideEdit = True if not isLoggedIn(login_session) or c_user_id != login_session['user_id'] else False
+    return render_template('showItem.html', item = item, hideEdit = hideEdit, isLoggedIn = isLoggedIn(login_session))
 
 def isLoggedIn(login_session):
     if 'user_id' not in login_session or login_session['user_id'] is None:
@@ -89,15 +91,41 @@ def addItem():
             return 'POST'
     
 
-@app.route('/categories/<string:item_name>/edit')
-@auth.login_required
-def editItem(item_name):
+@app.route('/categories/<string:category_name>/<string:item_name>/edit', methods = ['POST', 'GET'])
+def editItem(category_name, item_name):
     session = DBSession()
+    if isLoggedIn(login_session) is False:
+        return "Please login first"
+    else:
+        if request.method == 'GET':
+            categories = session.query(Category).all()
+            item = session.query(Item).filter_by(category_name = category_name, name = item_name).one()
+            return render_template('edit.html', categories = categories, isLoggedIn = isLoggedIn(login_session), item = item)
+        if request.method == 'POST':
+            new_item_name = request.form.get('item_name')
+            new_item_description = request.form.get('item_description')
+            new_item_category = request.form.get('item_category')
+            item = session.query(Item).filter_by(category_name = category_name, name = item_name).one()
+            item.category_name = new_item_category
+            item.name = new_item_name
+            session.commit()
+            return 'POST'
     
-@app.route('/categories/<string:item_name>/delete')
-@auth.login_required
-def deleteItem(item_name):
+@app.route('/categories/<string:category_name>/<string:item_name>/delete', methods = ['GET', 'POST'])
+def deleteItem(category_name, item_name):
     session = DBSession()
+    if isLoggedIn(login_session) is False:
+        return "Please login first"
+    else:
+        if request.method == 'GET':
+            categories = session.query(Category).all()
+            item = session.query(Item).filter_by(category_name = category_name, name = item_name).one()
+            return render_template('delete.html', categories = categories, isLoggedIn = isLoggedIn(login_session), item = item)
+        if request.method == 'POST':
+            item = session.query(Item).filter_by(category_name = category_name, name = item_name).one()
+            session.delete(item)
+            session.commit()
+            return 'POST'
     
 @app.route('/login')
 def showLogin():

@@ -2,6 +2,7 @@
 {% block content %}
 <div class="row">
     <div class="col-md-6">
+        <p><strong>Categories</strong></p>
         {% for category in categories %}
         <li><a href="{{ url_for('showCategoryItems', category_name = category.name) }}">{{category.name}}</a></li>
         {% endfor %}

@@ -2,11 +2,16 @@
 {% block content %}
 <div class="row">
     <div class="col-md-6">
+        <p><strong>Categories</strong></p>
         {% for category in categories %}
         <li><a href="{{ url_for('showCategoryItems', category_name = category.name) }}">{{category.name}}</a></li>
         {% endfor %}
     </div>
     <div class="col-md-6">
+        {% if isLoggedIn %}
+        <a href="{{ url_for('addItem') }}">Add Item</a>
+        {% endif %}
+        <p><strong>{{category_name}} Items ({{num_of_items}})</strong></p>
         {% for item in items %}
         <li><a href="{{ url_for('showItems', category_name = item.category_name, item_name = item.name) }}">{{item.name}}</a></li>
         {% endfor %}

@@ -7,11 +7,11 @@
                 {{item.name}}
             </head>
             <section>
-                {{item.description}}
+                Description:&nbsp;{{item.description}}
             </section>
         </article>
         {% if hideEdit != True %}
-        <a href="{{ url_for('editItem', item_name = item.name) }}">Edit</a>&nbsp;|&nbsp;<a href="{{ url_for('deleteItem', item_name = item.name ) }}">Delete</a>
+        <a href="{{ url_for('editItem', category_name = item.category_name, item_name = item.name) }}">Edit</a>&nbsp;|&nbsp;<a href="{{ url_for('deleteItem', category_name = item.category_name, item_name = item.name ) }}">Delete</a>
         {% endif %}
     </div>
 </div>
