@@ -1,0 +1,11 @@
+{% extends "main.html" %}
+{% block content %}
+<form method="POST" action="{{ url_for('deleteItem', category_name = item.category_name, item_name = item.name) }}">
+    <p>
+        Delete Item
+        {{ item.category_name }} - {{ item.name }}<br>
+        Are you sure you want to delete?
+    </p>
+    <input type="submit" value="submit">
+</form>
+{% endblock %}
