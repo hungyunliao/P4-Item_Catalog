@@ -53,7 +53,7 @@ def showLatest():
 def showCategoryItems(category_name):
     session = DBSession()
     categories = session.query(Category).all()
-    items = session.query(Item).filter_by(category_name = category_name).all()
+    items = session.query(Item).filter_by(category_name = category_name).order_by("id desc").all()
     num_of_items = ("%s %s" % (len(items), ' items' if len(items) > 1 else ' item'))
     return render_template('showCategories.html', categories = categories, items = items, isLoggedIn = isLoggedIn(login_session), category_name = category_name, num_of_items = num_of_items)
 
@@ -110,7 +110,9 @@ def editItem(category_name, item_name):
             item.name = new_item_name
             item.description = new_item_description
             session.commit()
-            return 'POST'
+            c_user_id = item.user_id
+            hideEdit = True if not isLoggedIn(login_session) or c_user_id != login_session['user_id'] else False
+            return render_template('showItem.html', item = item, hideEdit = hideEdit, isLoggedIn = isLoggedIn(login_session))
     
 @app.route('/categories/<string:category_name>/<string:item_name>/delete', methods = ['GET', 'POST'])
 def deleteItem(category_name, item_name):
@@ -126,7 +128,9 @@ def deleteItem(category_name, item_name):
             item = session.query(Item).filter_by(category_name = category_name, name = item_name).one()
             session.delete(item)
             session.commit()
-            return 'POST'
+            categories = session.query(Category).all()
+            items = session.query(Item).order_by("id desc").all()
+            return render_template('showLatest.html', categories = categories, items = items, isLoggedIn = isLoggedIn(login_session))
     
 @app.route('/login')
 def showLogin():
@@ -138,6 +142,101 @@ def showLogin():
     else:
         return render_template('login.html', state = state, user_id = login_session['user_id'], hideLogin = True)
 
+@app.route('/fbconnect', methods=['POST'])
+def fbconnect():
+    print 'statesToken: ' + request.args.get('state')
+    if request.args.get('state') != login_session['state']:
+        response = make_response(json.dumps('Invalid state parameter.'), 401)
+        response.headers['Content-Type'] = 'application/json'
+        return response
+    access_token = request.data
+    print "access token received %s " % access_token
+
+    app_id = json.loads(open('fb_client_secrets.json', 'r').read())['web']['app_id']
+    app_secret = json.loads(
+        open('fb_client_secrets.json', 'r').read())['web']['app_secret']
+    url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (
+        app_id, app_secret, access_token)
+    h = httplib2.Http()
+    result = h.request(url, 'GET')[1]
+
+    # Use token to get user info from API
+    userinfo_url = "https://graph.facebook.com/v2.8/me"
+    '''
+        Due to the formatting for the result from the server token exchange we have to
+        split the token first on commas and select the first index which gives us the key : value
+        for the server access token then we split it on colons to pull out the actual token value
+        and replace the remaining quotes with nothing so that it can be used directly in the graph
+        api calls
+    '''
+    token = result.split(',')[0].split(':')[1].replace('"', '')
+
+    url = 'https://graph.facebook.com/v2.8/me?access_token=%s&fields=name,id,email' % token
+    h = httplib2.Http()
+    result = h.request(url, 'GET')[1]
+    # print "url sent for API access:%s"% url
+    # print "API JSON result: %s" % result
+    data = json.loads(result)
+    login_session['provider'] = 'facebook'
+    login_session['username'] = data["name"]
+    login_session['email'] = data["email"]
+    login_session['facebook_id'] = data["id"]
+
+    # The token must be stored in the login_session in order to properly logout
+    login_session['access_token'] = token
+
+    # Get user picture
+    url = 'https://graph.facebook.com/v2.8/me/picture?access_token=%s&redirect=0&height=200&width=200' % token
+    h = httplib2.Http()
+    result = h.request(url, 'GET')[1]
+    data = json.loads(result)
+
+    login_session['picture'] = data["data"]["url"]
+
+    # see if user exists
+    user_id = getUserID(login_session['email'])
+    if user_id is None:
+        user_id = createUser(login_session)
+    login_session['user_id'] = user_id
+    
+    output = ''
+    output += '<h1>Welcome, '
+    output += login_session['username']
+
+    output += '!</h1>'
+    output += '<img src="'
+    output += login_session['picture']
+    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+
+    flash("Now logged in as %s" % login_session['username'])
+    return output
+
+
+@app.route('/fbdisconnect')
+def fbdisconnect():
+    facebook_id = login_session['facebook_id']
+    # The access token must me included to successfully logout
+    access_token = login_session['access_token']
+    url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (facebook_id,access_token)
+    h = httplib2.Http()
+    result = json.loads(h.request(url, 'DELETE')[1])
+    if 'success' in result and result['success'] == True:
+        del login_session['access_token']
+        del login_session['facebook_id']
+        del login_session['username']
+        del login_session['email']
+        del login_session['picture']
+        del login_session['provider']
+        del login_session['user_id']
+        response = make_response(json.dumps('Successfully disconnected.'), 200)
+        response.headers['Content-Type'] = 'application/json'
+#        return response
+        return redirect(url_for('showLatest'))
+    else:
+        response = make_response(json.dumps('Failed to revoke token for given user.', 400))
+        response.headers['Content-Type'] = 'application/json'
+        return response 
+    
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
     session = DBSession()
