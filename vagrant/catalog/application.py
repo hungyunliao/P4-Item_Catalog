@@ -253,32 +253,6 @@ def fbconnect():
 
     flash("Now logged in as %s" % login_session['username'])
     return output
-
-
-@app.route('/fbdisconnect')
-def fbdisconnect():
-    facebook_id = login_session['facebook_id']
-    # The access token must me included to successfully logout
-    access_token = login_session['access_token']
-    url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (facebook_id,access_token)
-    h = httplib2.Http()
-    result = json.loads(h.request(url, 'DELETE')[1])
-    if 'success' in result and result['success'] == True:
-        del login_session['access_token']
-        del login_session['facebook_id']
-        del login_session['username']
-        del login_session['email']
-        del login_session['picture']
-        del login_session['provider']
-        del login_session['user_id']
-        response = make_response(json.dumps('Successfully disconnected.'), 200)
-        response.headers['Content-Type'] = 'application/json'
-#        return response
-        return redirect(url_for('showLatest'))
-    else:
-        response = make_response(json.dumps('Failed to revoke token for given user.', 400))
-        response.headers['Content-Type'] = 'application/json'
-        return response 
     
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
@@ -374,7 +348,32 @@ def gconnect():
     print "done!"
     return output
 
-@app.route('/disconnect')
+@app.route('/fbdisconnect')
+def fbdisconnect():
+    facebook_id = login_session['facebook_id']
+    # The access token must me included to successfully logout
+    access_token = login_session['access_token']
+    url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (facebook_id,access_token)
+    h = httplib2.Http()
+    result = json.loads(h.request(url, 'DELETE')[1])
+    if 'success' in result and result['success'] == True:
+        del login_session['access_token']
+        del login_session['facebook_id']
+        del login_session['username']
+        del login_session['email']
+        del login_session['picture']
+        del login_session['provider']
+        del login_session['user_id']
+        response = make_response(json.dumps('Successfully disconnected.'), 200)
+        response.headers['Content-Type'] = 'application/json'
+#        return response
+        return redirect(url_for('showLatest'))
+    else:
+        response = make_response(json.dumps('Failed to revoke token for given user.', 400))
+        response.headers['Content-Type'] = 'application/json'
+        return response 
+
+@app.route('/gdisconnect')
 def disconnect():
     session = DBSession()
     access_token = login_session.get('access_token')
@@ -383,9 +382,6 @@ def disconnect():
         response = make_response(json.dumps('Current user not connected.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
-    print 'In gdisconnect access token is %s', access_token
-    print 'User name is: '
-    print login_session['username']
     url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['access_token']
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
@@ -408,6 +404,13 @@ def disconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
+@app.route('/logout')
+def logout():
+    if login_session['provider'] == 'google':
+        return disconnect()
+    elif login_session['provider'] == 'facebook':
+        return fbdisconnect()
+    
 def getUserID(email):
     session = DBSession()
     try:
