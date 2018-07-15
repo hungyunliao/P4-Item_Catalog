@@ -21,7 +21,7 @@ class User(Base):
     password_hash = Column(String(64))
     
     # Store hashed password for security reasons
-    def hash_passowrd(self, password):
+    def hash_password(self, password):
         self.password_hash = pwd_context.encrypt(password)
         
     def verify_password(self, password):
@@ -34,7 +34,7 @@ class User(Base):
     # Verify auth tokens
     @staticmethod
     def verify_auth_token(token):
-        s = Serializer(token)
+        s = Serializer(secret_key)
         try:
             data = s.loads(token)
         except SignatureExpired:
@@ -64,7 +64,7 @@ class Item(Base):
     @property
     def serialize(self):
         return {
-            'cat_id': self.category_id,
+            'cat_id': self.category.id,
             'description': self.description,
             'title': self.name,
             'id': self.id

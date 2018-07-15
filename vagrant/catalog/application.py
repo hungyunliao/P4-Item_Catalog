@@ -37,8 +37,49 @@ def verify_passowrd(username_or_token, password):
         user = session.query(User).filter_by(username = username_or_token).first()
         if not user or not user.verify_password(password):
             return False
-        g.user = user
-        return True
+    g.user = user
+    return True
+
+@app.route('/users', methods = ['POST'])
+def createUser():
+    session = DBSession()
+    username = request.json.get('username')
+    password = request.json.get('password')
+    if username is None or password is None:
+        abort(400)
+    user = session.query(User).filter_by(username = username).first()
+    if user is not None:
+        abort(400)
+    user = User(username = username)
+    user.hash_password(password)
+    session.add(user)
+    session.commit()
+    return jsonify({'username': user.username}), 201
+
+@app.route('/tokens', methods = ['POST'])
+@auth.login_required
+def getToken():
+    token = g.user.generate_auth_token()
+    return jsonify({'token': token.decode('ascii')})
+    
+@app.route('/categories.json')
+@auth.login_required
+def showJSON():
+    session = DBSession()
+    jsonfile = {
+        'result': 'success'
+    }
+    categories = session.query(Category).all()
+    data = []
+    for cate in categories:
+        items = session.query(Item).filter_by(category_name = cate.name).all()
+        jsonfile = {
+            'id': cate.id,
+            'name': cate.name,
+            'item': [i.serialize for i in items]
+        }
+        data.append(jsonfile)
+    return jsonify(Category=data)
 
 @app.route('/')
 @app.route('/categories')
@@ -88,7 +129,9 @@ def addItem():
             item = Item(name = item_name, description = item_description, category_name = item_category, user_id = user_id)
             session.add(item)
             session.commit()
-            return 'POST'
+            c_user_id = item.user_id
+            hideEdit = True if not isLoggedIn(login_session) or c_user_id != login_session['user_id'] else False
+            return render_template('showItem.html', item = item, hideEdit = hideEdit, isLoggedIn = isLoggedIn(login_session))
     
 
 @app.route('/categories/<string:category_name>/<string:item_name>/edit', methods = ['POST', 'GET'])
