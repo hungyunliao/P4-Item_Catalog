@@ -108,6 +108,7 @@ def editItem(category_name, item_name):
             item = session.query(Item).filter_by(category_name = category_name, name = item_name).one()
             item.category_name = new_item_category
             item.name = new_item_name
+            item.description = new_item_description
             session.commit()
             return 'POST'
     
