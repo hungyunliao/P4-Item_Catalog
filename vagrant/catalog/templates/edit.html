@@ -1,16 +1,17 @@
 {% extends "main.html" %}
 {% block content %}
 <form method="POST" action="{{ url_for('editItem', category_name = item.category_name, item_name = item.name) }}">
+    <h2>Edit Item</h2>
     <p>
-        Title
+        Title<br>
         <input type="text" name="item_name" value="{{ item.name }}">
     </p>
     <p>
-        Description
+        Description<br>
         <textarea name="item_description">{{ item.description }}</textarea>
     </p>
     <p>
-        Category
+        Category<br>
         <select name="item_category">
             {% for cate in categories %}
             <option value="{{cate.name}}" {% if item.category_name == cate.name %}selected{% endif %}>{{cate.name}}</option>

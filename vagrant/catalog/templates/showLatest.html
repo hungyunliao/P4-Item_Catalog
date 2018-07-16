@@ -1,19 +1,19 @@
 {% extends "main.html" %}
 {% block content %}
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-3" style="border-right: solid 1px black;">
         <p><strong>Categories</strong></p>
         {% for category in categories %}
-        <li><a href="{{ url_for('showCategoryItems', category_name = category.name) }}">{{category.name}}</a></li>
+        <a href="{{ url_for('showCategoryItems', category_name = category.name) }}">{{category.name}}</a><br>
         {% endfor %}
     </div>
-    <div class="col-md-6">
+    <div class="col-md-8">
         {% if isLoggedIn %}
         <a href="{{ url_for('addItem') }}">Add Item</a>
         {% endif %}
         <p><strong>Latest Items</strong></p>
         {% for item in items %}
-            <li><a href="{{ url_for('showItems', category_name = item.category_name, item_name = item.name) }}">{{item.name}} ({{item.category_name}})</a></li>
+            <a href="{{ url_for('showItems', category_name = item.category_name, item_name = item.name) }}">{{item.name}} </a><i>({{item.category_name}})</i><br>
         {% endfor %}
     </div>
 </div>

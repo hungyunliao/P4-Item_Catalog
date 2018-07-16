@@ -56,6 +56,8 @@
     // Here we run a very simple test of the Graph API after login is
     // successful.  See statusChangeCallback() for when this call is made.
     function sendTokenToServer() {
+        // Hide the sign-in button now that the user is authorized
+        $('#signinButton').attr('style', 'display: none');
         var access_token = FB.getAuthResponse()['accessToken'];
         console.log(access_token)
         console.log('Welcome!  Fetching your information.... ');
@@ -87,24 +89,31 @@
 {% block content %}
 <div class="row">
     <div class="col-md-12">
-        <!-- GOOGLE PLUS SIGN IN BUTTON-->
-        <div id="signinButton">
-            <span class="g-signin"
-                data-scope="openid email"   
-                data-clientid="404665831427-1r7rqgqagbqsr54uo8gmon82l77o2slc.apps.googleusercontent.com"
-                data-redirecturi="postmessage"
-                data-accesstype="offline"
-                data-cookiepolicy="single_host_origin"
-                data-callback="signInCallback"
-                data-approvalprompt="force">
-            </span>
-        </div>
+        <h2>User Login</h2>
+        <p>
+            <div id="signinButton">
+                Login with a user account:<br>
+                <!-- GOOGLE PLUS SIGN IN BUTTON-->
+                <span class="g-signin"
+                    data-scope="openid email"   
+                    data-clientid="404665831427-1r7rqgqagbqsr54uo8gmon82l77o2slc.apps.googleusercontent.com"
+                    data-redirecturi="postmessage"
+                    data-accesstype="offline"
+                    data-cookiepolicy="single_host_origin"
+                    data-callback="signInCallback"
+                    data-approvalprompt="force"
+                    style="width: 100px; height: 200px;">
+                </span>
+                <br>or<br>
+                <!-- FACEBOOK SIGN IN BUTTON-->
+                <button type="button" class="btn btn-link" style="padding: 0px !important;">
+                    <fb:login-button scope="public_profile,email" onlogin="sendTokenToServer();" size="xlarge">
+                        <a href='javascript:sendTokenToServer()'>Sign in</a>
+                    </fb:login-button>
+                </button>
+            </div>
+        </p>
         <div id="result"></div>
-        <button>
-            <fb:login-button scope="public_profile,email" onlogin="sendTokenToServer();">
-                <a href='javascript:sendTokenToServer()'>Login with Facebook</a>
-            </fb:login-button>
-        </button>
     </div>
 </div>
 {% endblock %}
