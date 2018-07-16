@@ -116,7 +116,7 @@ def isLoggedIn(login_session):
 def addItem():
     session = DBSession()
     if isLoggedIn(login_session) is False:
-        return "Please login first"
+        return redirect(url_for('showLogin'))
     else:
         if request.method == 'GET':
             categories = session.query(Category).all()
@@ -138,17 +138,21 @@ def addItem():
 def editItem(category_name, item_name):
     session = DBSession()
     if isLoggedIn(login_session) is False:
-        return "Please login first"
+        return redirect(url_for('showLogin'))
     else:
         if request.method == 'GET':
             categories = session.query(Category).all()
             item = session.query(Item).filter_by(category_name = category_name, name = item_name).one()
+            if item.user_id != login_session['user_id']:
+                return 'Access denied.'
             return render_template('edit.html', categories = categories, isLoggedIn = isLoggedIn(login_session), item = item)
         if request.method == 'POST':
+            item = session.query(Item).filter_by(category_name = category_name, name = item_name).one()
+            if item.user_id != login_session['user_id']:
+                return 'Access denied.'
             new_item_name = request.form.get('item_name')
             new_item_description = request.form.get('item_description')
             new_item_category = request.form.get('item_category')
-            item = session.query(Item).filter_by(category_name = category_name, name = item_name).one()
             item.category_name = new_item_category
             item.name = new_item_name
             item.description = new_item_description
@@ -161,14 +165,17 @@ def editItem(category_name, item_name):
 def deleteItem(category_name, item_name):
     session = DBSession()
     if isLoggedIn(login_session) is False:
-        return "Please login first"
+        return redirect(url_for('showLogin'))
     else:
         if request.method == 'GET':
-            categories = session.query(Category).all()
             item = session.query(Item).filter_by(category_name = category_name, name = item_name).one()
-            return render_template('delete.html', categories = categories, isLoggedIn = isLoggedIn(login_session), item = item)
+            if item.user_id != login_session['user_id']:
+                return 'Access denied.'
+            return render_template('delete.html', isLoggedIn = isLoggedIn(login_session), item = item)
         if request.method == 'POST':
             item = session.query(Item).filter_by(category_name = category_name, name = item_name).one()
+            if item.user_id != login_session['user_id']:
+                return 'Access denied.'
             session.delete(item)
             session.commit()
             categories = session.query(Category).all()
@@ -180,10 +187,7 @@ def showLogin():
     session = DBSession()
     state = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
     login_session['state'] = state
-    if isLoggedIn(login_session) is False:
-        return render_template('login.html', state = state, user_id = None, hideLogin = True)
-    else:
-        return render_template('login.html', state = state, user_id = login_session['user_id'], hideLogin = True)
+    return render_template('login.html', state = state, hideLogin = True)
 
 @app.route('/fbconnect', methods=['POST'])
 def fbconnect():

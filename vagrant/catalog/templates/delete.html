@@ -1,11 +1,15 @@
 {% extends "main.html" %}
 {% block content %}
-<form method="POST" action="{{ url_for('deleteItem', category_name = item.category_name, item_name = item.name) }}">
-    <h3>Delete Item</h3>
-    <p>
-        {{ item.category_name }} - {{ item.name }}<br>
-        Are you sure you want to delete?
-    </p>
-    <input type="submit" value="submit">
-</form>
+<div class="row">
+    <div class="col-md-12">
+        <form method="POST" action="{{ url_for('deleteItem', category_name = item.category_name, item_name = item.name) }}">
+            <h3>Delete Item</h3>
+            <p>
+                {{ item.category_name }} - {{ item.name }}<br>
+                Are you sure you want to delete?
+            </p>
+            <input type="submit" value="submit">
+        </form>
+    </div>
+</div>
 {% endblock %}

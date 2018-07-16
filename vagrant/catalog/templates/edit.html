@@ -1,23 +1,27 @@
 {% extends "main.html" %}
 {% block content %}
-<form method="POST" action="{{ url_for('editItem', category_name = item.category_name, item_name = item.name) }}">
-    <h2>Edit Item</h2>
-    <p>
-        Title<br>
-        <input type="text" name="item_name" value="{{ item.name }}">
-    </p>
-    <p>
-        Description<br>
-        <textarea name="item_description">{{ item.description }}</textarea>
-    </p>
-    <p>
-        Category<br>
-        <select name="item_category">
-            {% for cate in categories %}
-            <option value="{{cate.name}}" {% if item.category_name == cate.name %}selected{% endif %}>{{cate.name}}</option>
-            {% endfor %}
-        </select>
-    </p>
-    <input type="submit" value="submit">
-</form>
+<div class="row">
+    <div class="col-md-12">
+        <form method="POST" action="{{ url_for('editItem', category_name = item.category_name, item_name = item.name) }}">
+            <h3>Edit Item</h3>
+            <p>
+                Title<br>
+                <input type="text" name="item_name" value="{{ item.name }}">
+            </p>
+            <p>
+                Description<br>
+                <textarea name="item_description">{{ item.description }}</textarea>
+            </p>
+            <p>
+                Category<br>
+                <select name="item_category">
+                    {% for cate in categories %}
+                    <option value="{{cate.name}}" {% if item.category_name == cate.name %}selected{% endif %}>{{cate.name}}</option>
+                    {% endfor %}
+                </select>
+            </p>
+            <input type="submit" value="submit">
+        </form>
+    </div>
+</div>
 {% endblock %}
