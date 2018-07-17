@@ -9,6 +9,7 @@
         if(authResult['code']) {
             // Hide the sign-in button now that the user is authorized
             $('#signinButton').attr('style', 'display: none');
+            $('#result').html("Logging in...");
             // Send the one-time-use code to the server, if the server responds, write a 'login successful' message to the web page and then redirect back to the main restaurants page
             $.ajax({
                 type: 'POST',
@@ -19,7 +20,7 @@
                 success: function(result) {
                     // Handle or verify the server response if necessary.
                     if (result) {
-                        $('#result').html('Login Successful!</br>'+ result + '</br>Redirecting...')
+                        $('#result').html('<center>Login Successful!</br>'+ result + '</br>Redirecting...</center>')
                         setTimeout(function() {    // redirect to restaurant after 4 sec.
                             window.location.href = "/categories";
                         }, 4000);
@@ -58,6 +59,7 @@
     function sendTokenToServer() {
         // Hide the sign-in button now that the user is authorized
         $('#signinButton').attr('style', 'display: none');
+        $('#result').html("Logging in...");
         var access_token = FB.getAuthResponse()['accessToken'];
         console.log(access_token)
         console.log('Welcome!  Fetching your information.... ');
@@ -72,7 +74,7 @@
                 success: function(result) {
                     // Handle or verify the server response if necessary.
                     if (result) {
-                        $('#result').html('Login Successful!</br>'+ result + '</br>Redirecting...')
+                        $('#result').html('<center>Login Successful!</br>'+ result + '</br>Redirecting...</center>')
                         setTimeout(function() {
                             window.location.href = "/categories";
                         }, 4000);
