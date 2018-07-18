@@ -36,7 +36,7 @@
     
     window.fbAsyncInit = function() {
         FB.init({
-            appId      : '465766407226667',
+            appId      : '{{fb_app_id}}',
             cookie     : true,  // enable cookies to allow the server to access 
                                 // the session
             xfbml      : true,  // parse social plugins on this page
@@ -98,7 +98,7 @@
                 <!-- GOOGLE PLUS SIGN IN BUTTON-->
                 <span class="g-signin"
                     data-scope="openid email"   
-                    data-clientid="404665831427-1r7rqgqagbqsr54uo8gmon82l77o2slc.apps.googleusercontent.com"
+                    data-clientid="{{g_client_id}}"
                     data-redirecturi="postmessage"
                     data-accesstype="offline"
                     data-cookiepolicy="single_host_origin"

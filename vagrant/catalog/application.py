@@ -29,7 +29,12 @@ app = Flask(__name__)
 CLIENT_ID = json.loads(
                 open('client_secrets.json', 'r').read()
             )['web']['client_id']
-
+FB_APP_ID = json.loads(
+        open('fb_client_secrets.json', 'r').read()
+    )['web']['app_id']
+FB_APP_SECRET = json.loads(
+        open('fb_client_secrets.json', 'r').read()
+    )['web']['app_secret']
 
 # ADD @auth.verify_password decorator here
 @auth.verify_password
@@ -272,7 +277,7 @@ def showLogin():
         random.choice(string.ascii_uppercase+string.digits) for x in xrange(32)
     )
     login_session['state'] = state
-    return render_template('login.html', state=state, hideLogin=True)
+    return render_template('login.html', state=state, hideLogin=True, g_client_id=CLIENT_ID, fb_app_id=FB_APP_ID)
 
 
 @app.route('/fbconnect', methods=['POST'])
@@ -284,13 +289,9 @@ def fbconnect():
         return response
     access_token = request.data
 
-    app_id = json.loads(
-        open('fb_client_secrets.json', 'r').read())['web']['app_id']
-    app_secret = json.loads(
-        open('fb_client_secrets.json', 'r').read())['web']['app_secret']
     url = 'https://graph.facebook.com/oauth/access_token?' \
         'grant_type=fb_exchange_token&client_id=%s&client_secret=%s&' \
-        'fb_exchange_token=%s' % (app_id, app_secret, access_token)
+        'fb_exchange_token=%s' % (FB_APP_ID, FB_APP_SECRET, access_token)
 
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
