@@ -113,26 +113,26 @@ http://local:5000/
 ```
 
 ### Website Screenshots
-Show latest items
+Show latest items (http://localhost:5000/categories)
 ![alt text](figures/show_latest.png "Show latest items")
 
-Show latest items (logged in)
+Show latest items (logged in) 
 ![alt text](figures/show_latest_logged_in.png "Show latest items logged in")
 
-Show category items
+Show category items (http://localhost:5000/categories/Soccer/items)
 ![alt text](figures/show_category.png "show category")
 
-Show item description
+Show item description (http://localhost:5000/categories/Baseball/Helmet)
 ![alt text](figures/show_description_hide.png "show description hide")
 
-Show item description (the user who created it)
+Show item description (the user who created it) (http://localhost:5000/categories/Rock%20Climbing/Glasses)
 ![alt text](figures/show_description.png "show description")
 
-Login screen
+Login screen (http://localhost:5000/login)
 ![alt text](figures/login.png "login")
 
-Add item
+Add item (http://localhost:5000/categories/items/add)
 ![alt text](figures/add.png "add")
 
-JSON endpoint
+JSON endpoint (http://localhost:5000/categories.json)
 ![alt text](figures/json_endpoint.png "json endpoint")
