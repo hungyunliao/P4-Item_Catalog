@@ -3,7 +3,7 @@ This is a website that allows users to browse items in different catgories. The 
 - Users can add items (title, description, category).
 - An item can only be updated/deleted by the user who created it.
 
-### Skills Applied
+## Skills Applied
 1. MySQL database for data storage
 2. Python server side back-end scripts running on Flask
 3. Client side front-end web pages using Bootstrap JS framework for UI
@@ -14,7 +14,7 @@ This is a website that allows users to browse items in different catgories. The 
 7. Cross-Site Request Forgery (CSRF) protection using session state
 8. Post-Redirect-Get (PRG) pattern to prevent false submission
 
-### Database Schema
+## Database Schema
 User
 
 | Column        | Type          |
@@ -42,7 +42,7 @@ Item
 | category_name | FK(Category)      |
 | user_id | FK(User)      |
 
-### Usage
+## Usage
 Make sure you have all dependencies installed on your local machine. They are:
 - vagrant (virtual environment setup tool)
 - itsdangerous (Python token signing module)
@@ -114,6 +114,8 @@ Open the browser and visit the following url on your local machine
 http://local:5000/
 ```
 
+
+
 **JSON endpoint**
 
 Generate signed tokens (Note: token expires after 10 mins)
@@ -136,7 +138,7 @@ Get the app JSON data using credential
 $ curl -i -u "testuser":"testps" "http://localhost:5000/categories.json"
 ```
 
-### Website Screenshots
+## Website Screenshots
 Show latest items (http://localhost:5000/categories)
 ![alt text](figures/show_latest.png "Show latest items")
 
