@@ -109,7 +109,7 @@ http://local:5000/
 
 ### Website Screenshots
 Show latest items
-![alt text](https://github.com/hungyunliao/P4-Item_Catalog/tree/master/vagrant/catalog/figures/show_latest.png "Show latest items")
+![alt text](figures/show_latest.png "Show latest items")
 
 <img src="https://github.com/hungyunliao/P4-Item_Catalog/tree/master/vagrant/catalog/figures/show_latest.png">
 
