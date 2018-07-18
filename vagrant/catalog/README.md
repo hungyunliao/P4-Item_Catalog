@@ -111,6 +111,8 @@ http://local:5000/
 Show latest items
 ![alt text](https://github.com/hungyunliao/P4-Item_Catalog/tree/master/vagrant/catalog/figures/show_latest.png "Show latest items")
 
+<img src="https://github.com/hungyunliao/P4-Item_Catalog/tree/master/vagrant/catalog/figures/show_latest.png">
+
 Show category items
 ![alt text](https://github.com/hungyunliao/P4-Item_Catalog/tree/master/vagrant/catalog/figures/show_category.png "show category")
 
