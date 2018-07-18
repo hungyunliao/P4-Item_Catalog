@@ -71,7 +71,7 @@ $ cd /vagrant/catalog
 
 Create your client_secret.json and fb_client_secret.json, and place them under `/vagrant/catalog/`. The JSON files should be something like
 ```
-GOOGEL:
+client_secret.json (GOOGEL):
 {
     "web":{
         "client_id":"Account ID goes here",
@@ -88,13 +88,18 @@ GOOGEL:
     }
 }
 
-FACEBOOK:
+fb_client_secret.json (FACEBOOK):
 {
     "web" : {
         "app_id" : "APP ID goes here",
         "app_secret" : "APP SECRET goes here"
     }
 }
+```
+
+Propagate Category, Item data
+```
+$ python create_db.py
 ```
 
 Run the server script

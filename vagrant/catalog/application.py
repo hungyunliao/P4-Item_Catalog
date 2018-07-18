@@ -36,6 +36,7 @@ FB_APP_SECRET = json.loads(
         open('fb_client_secrets.json', 'r').read()
     )['web']['app_secret']
 
+
 # ADD @auth.verify_password decorator here
 @auth.verify_password
 def verify_passowrd(username_or_token, password):
@@ -268,7 +269,13 @@ def showLogin():
         random.choice(string.ascii_uppercase+string.digits) for x in xrange(32)
     )
     login_session['state'] = state
-    return render_template('login.html', state=state, hideLogin=True, g_client_id=CLIENT_ID, fb_app_id=FB_APP_ID)
+    return render_template(
+        'login.html',
+        state=state,
+        hideLogin=True,
+        g_client_id=CLIENT_ID,
+        fb_app_id=FB_APP_ID
+    )
 
 
 @app.route('/fbconnect', methods=['POST'])
