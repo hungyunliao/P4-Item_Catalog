@@ -111,16 +111,14 @@ http://local:5000/
 Show latest items
 ![alt text](figures/show_latest.png "Show latest items")
 
-<img src="https://github.com/hungyunliao/P4-Item_Catalog/tree/master/vagrant/catalog/figures/show_latest.png">
-
 Show category items
-![alt text](https://github.com/hungyunliao/P4-Item_Catalog/tree/master/vagrant/catalog/figures/show_category.png "show category")
+![alt text](figures/show_category.png "show category")
 
 Login screen
-![alt text](https://github.com/hungyunliao/P4-Item_Catalog/tree/master/vagrant/catalog/figures/login.png "login")
+![alt text](figures/login.png "login")
 
 Add item
-![alt text](https://github.com/hungyunliao/P4-Item_Catalog/tree/master/vagrant/catalog/figures/add.png "add")
+![alt text](figures/add.png "add")
 
 JSON endpoint
-![alt text](https://github.com/hungyunliao/P4-Item_Catalog/tree/master/vagrant/catalog/figures/json_endpoint.png "json endpoint")
+![alt text](figures/json_endpoint.png "json endpoint")
