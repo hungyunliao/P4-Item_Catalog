@@ -69,7 +69,7 @@ Cd to '/vagrant/catalog/'
 $ cd /vagrant/catalog
 ```
 
-Create your client_secret.json and fb_client_secret.json, and place them under `/vagrant/catalog/`. The JSON files should be something like
+Create your `client_secret.json` and `fb_client_secret.json`, and place them under `/vagrant/catalog/`. The JSON files should be something like
 ```
 client_secret.json (GOOGEL):
 {
@@ -110,6 +110,26 @@ $ python application.py
 Open the browser and visit the following url on your local machine
 ```
 http://local:5000/
+```
+
+Generate signed tokens (Note: token expires after 10 mins)
+```
+$ curl -X POST -i -u "testuser":"testps" "http://localhost:5000/tokens"
+
+Response:
+{
+  "token": "eyJhbGciOiJIUzI1NiIsImV4cCI6MTUzMTg5NDY1OSwiaWF0IjoxNTMxODk0MDU5fQ.eyJpZCI6MX0.66mzV4LW6t3BsQMY2tYuBQ3xx8zZiNlPRf5M6IB5uro"
+}
+```
+
+Get the app JSON data using token
+```
+$ curl -i -u tokenString:blank "http://localhost:5000/categories.json"
+```
+
+Get the app JSON data using credential
+```
+$ curl -i -u "testuser":"testps" "http://localhost:5000/categories.json"
 ```
 
 ### Website Screenshots
