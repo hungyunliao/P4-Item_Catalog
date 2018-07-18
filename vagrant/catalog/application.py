@@ -184,14 +184,12 @@ def addItem():
             )
             session.add(item)
             session.commit()
-            c_user_id = item.user_id
-            hideEdit = True if not isLoggedIn(login_session) or \
-                c_user_id != login_session['user_id'] else False
-            return render_template(
-                'showItem.html',
-                item=item,
-                hideEdit=hideEdit,
-                isLoggedIn=isLoggedIn(login_session)
+            return redirect(
+                url_for(
+                    'showItems',
+                    category_name=item.category_name,
+                    item_name=item.name
+                )
             )
 
 
@@ -226,14 +224,12 @@ def editItem(category_name, item_name):
             item.name = new_item_name
             item.description = new_item_description
             session.commit()
-            c_user_id = item.user_id
-            hideEdit = True if not isLoggedIn(login_session) \
-                or c_user_id != login_session['user_id'] else False
-            return render_template(
-                'showItem.html',
-                item=item,
-                hideEdit=hideEdit,
-                isLoggedIn=isLoggedIn(login_session)
+            return redirect(
+                url_for(
+                    'showItems',
+                    category_name=item.category_name,
+                    item_name=item.name
+                )
             )
 
 
@@ -262,12 +258,7 @@ def deleteItem(category_name, item_name):
             session.commit()
             categories = session.query(Category).all()
             items = session.query(Item).order_by("id desc").all()
-            return render_template(
-                'showLatest.html',
-                categories=categories,
-                items=items,
-                isLoggedIn=isLoggedIn(login_session)
-            )
+            return redirect(url_for('showLatest'))
 
 
 @app.route('/login')
