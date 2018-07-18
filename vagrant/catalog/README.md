@@ -111,8 +111,17 @@ http://local:5000/
 Show latest items
 ![alt text](figures/show_latest.png "Show latest items")
 
+Show latest items (logged in)
+![alt text](figures/show_latest_logged_in.png "Show latest items logged in")
+
 Show category items
 ![alt text](figures/show_category.png "show category")
+
+Show item description
+![alt text](figures/show_description_hide.png "show description hide")
+
+Show item description (the user who created it)
+![alt text](figures/show_description.png "show description")
 
 Login screen
 ![alt text](figures/login.png "login")
