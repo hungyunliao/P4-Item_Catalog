@@ -107,10 +107,14 @@ Run the server script
 $ python application.py
 ```
 
+**HTML endpoints (CRUD)**
+
 Open the browser and visit the following url on your local machine
 ```
 http://local:5000/
 ```
+
+**JSON endpoint**
 
 Generate signed tokens (Note: token expires after 10 mins)
 ```
