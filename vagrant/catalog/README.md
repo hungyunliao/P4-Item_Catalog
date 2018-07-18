@@ -1,7 +1,7 @@
 # Item_Catalog
 This is a website that allows users to browse items in different catgories. The items are maintained by admins (users who have been authorized and authenticated by Google or Facebook OAuth 2.0 APIs).
-- Users can add items (title, description, category) into.
--A item can only be updated/removed by the users who created it.
+- Users can add items (title, description, category).
+- An item can only be updated/deleted by the user who created it.
 
 ### Skills Applied
 1. MySQL database for data storage
@@ -15,7 +15,32 @@ This is a website that allows users to browse items in different catgories. The 
 8. Post-Redirect-Get (PRG) pattern to prevent false submission
 
 ### Database Schema
+User
 
+| Column        | Type          |
+| ------------- |:-------------:|
+| id      | Integer |
+| username      | String      |
+| email | String      |
+| picture | String      |
+| passwor_hash | String      |
+
+Category
+
+| Column        | Type          |
+| ------------- |:-------------:|
+| id      | Integer |
+| name      | String      |
+
+Item
+
+| Column        | Type          |
+| ------------- |:-------------:|
+| id      | Integer |
+| name      | String      |
+| description | String      |
+| category_name | FK(Category)      |
+| user_id | FK(User)      |
 
 ### Usage
 Make sure you have all dependencies installed on your local machine. They are:
@@ -82,4 +107,18 @@ Open the browser and visit the following url on your local machine
 http://local:5000/
 ```
 
-### Website
+### Website Screenshots
+Show latest items
+![alt text](https://github.com/hungyunliao/P4-Item_Catalog/tree/master/vagrant/catalog/figures/show_latest.png "Show latest items")
+
+Show category items
+![alt text](https://github.com/hungyunliao/P4-Item_Catalog/tree/master/vagrant/catalog/figures/show_category.png "show category")
+
+Login screen
+![alt text](https://github.com/hungyunliao/P4-Item_Catalog/tree/master/vagrant/catalog/figures/login.png "login")
+
+Add item
+![alt text](https://github.com/hungyunliao/P4-Item_Catalog/tree/master/vagrant/catalog/figures/add.png "add")
+
+JSON endpoint
+![alt text](https://github.com/hungyunliao/P4-Item_Catalog/tree/master/vagrant/catalog/figures/json_endpoint.png "json endpoint")
