@@ -1,6 +1,13 @@
+from functools import wraps
 from models import Base, User, Category, Item
-from flask import Flask, jsonify, request, url_for, \
-    abort, g, render_template, redirect, flash
+from flask import (Flask,
+                   jsonify,
+                   request,
+                   url_for,
+                   abort,
+                   g,
+                   render_template,
+                   redirect)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
 from sqlalchemy import create_engine, exc
@@ -37,14 +44,32 @@ FB_APP_SECRET = json.loads(
     )['web']['app_secret']
 
 
+def isLoggedIn(login_session):
+    if ('user_id' not in login_session or
+            login_session['user_id'] is None):
+        return False
+    else:
+        return True
+
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if isLoggedIn(login_session) is False:
+            return redirect(url_for('showLogin'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 # ADD @auth.verify_password decorator here
 @auth.verify_password
 def verify_passowrd(username_or_token, password):
     session = DBSession()
+    # use token to verify first
     user_id = User.verify_auth_token(username_or_token)
     if user_id:
         # if token is provided and passed
-        user = session.query(User).filter_by(id=user_id).one()
+        user = session.query(User).filter_by(id=user_id).one_or_none()
     else:
         # if not passed, use username:password verification instead
         user = session.query(User) \
@@ -57,6 +82,10 @@ def verify_passowrd(username_or_token, password):
 
 @app.route('/users', methods=['POST'])
 def createUser():
+    """ Create a user with a password that is allowed to
+    access JSON endpoints.
+    """
+
     session = DBSession()
     username = request.json.get('username')
     password = request.json.get('password')
@@ -76,6 +105,10 @@ def createUser():
 @app.route('/tokens', methods=['POST'])
 @auth.login_required
 def getToken():
+    """ Return a 10 mins lifespan token for a user to access
+    JSON endpoints
+    """
+
     session = DBSession()
     token = g.user.generate_auth_token()
     return jsonify({'token': token.decode('ascii')})
@@ -84,6 +117,10 @@ def getToken():
 @app.route('/categories.json')
 @auth.login_required
 def showJSON():
+    """ Return a JSON file including all the
+    info (categories, items) displayed on the website.
+    """
+
     session = DBSession()
     categories = session.query(Category).all()
     data = []
@@ -102,6 +139,8 @@ def showJSON():
 @app.route('/')
 @app.route('/categories')
 def showLatest():
+    """ Show items in ALL categories """
+
     session = DBSession()
     categories = session.query(Category).all()
     # list the latest itmes chronologically
@@ -117,6 +156,8 @@ def showLatest():
 @app.route('/categories/<string:category_name>')
 @app.route('/categories/<string:category_name>/items')
 def showCategoryItems(category_name):
+    """ Show items in a CERTAIN categories """
+
     session = DBSession()
     categories = session.query(Category).all()
     items = session.query(Item) \
@@ -137,9 +178,14 @@ def showCategoryItems(category_name):
 
 @app.route('/categories/<string:category_name>/<string:item_name>')
 def showItems(category_name, item_name):
+    """ Show the item details.
+    Hide the Edit | Delete button if the user is not logged in or
+    the user does not own the item.
+    """
+
     session = DBSession()
     item = session.query(Item) \
-        .filter_by(category_name=category_name, name=item_name).one()
+        .filter_by(category_name=category_name, name=item_name).one_or_none()
     c_user_id = item.user_id
     hideEdit = True if not isLoggedIn(login_session) or \
         c_user_id != login_session['user_id'] else False
@@ -151,115 +197,127 @@ def showItems(category_name, item_name):
     )
 
 
-def isLoggedIn(login_session):
-    if ('user_id' not in login_session or
-            login_session['user_id'] is None):
-        return False
-    else:
-        return True
-
-
 @app.route('/categories/items/add', methods=['POST', 'GET'])
+@login_required
 def addItem():
+    """ Add an item """
+
     session = DBSession()
-    if isLoggedIn(login_session) is False:
-        return redirect(url_for('showLogin'))
-    else:
-        if request.method == 'GET':
-            categories = session.query(Category).all()
-            return render_template(
-                'add.html',
-                categories=categories,
-                isLoggedIn=isLoggedIn(login_session)
+    if request.method == 'GET':
+        categories = session.query(Category).all()
+        return render_template(
+            'add.html',
+            categories=categories,
+            isLoggedIn=isLoggedIn(login_session)
+        )
+    elif request.method == 'POST':
+        item_name = request.form.get('item_name')
+        item_description = request.form.get('item_description')
+        item_category = request.form.get('item_category')
+        user_id = login_session['user_id']
+        item = Item(
+            name=item_name,
+            description=item_description,
+            category_name=item_category,
+            user_id=user_id
+        )
+        session.add(item)
+        session.commit()
+        return redirect(
+            url_for(
+                'showItems',
+                category_name=item.category_name,
+                item_name=item.name
             )
-        if request.method == 'POST':
-            item_name = request.form.get('item_name')
-            item_description = request.form.get('item_description')
-            item_category = request.form.get('item_category')
-            user_id = login_session['user_id']
-            item = Item(
-                name=item_name,
-                description=item_description,
-                category_name=item_category,
-                user_id=user_id
-            )
-            session.add(item)
-            session.commit()
-            return redirect(
-                url_for(
-                    'showItems',
-                    category_name=item.category_name,
-                    item_name=item.name
-                )
-            )
+        )
 
 
 @app.route('/categories/<string:category_name>/<string:item_name>/edit',
            methods=['POST', 'GET'])
+@login_required
 def editItem(category_name, item_name):
+    """ Edit an item.
+    An item can only be edited by the user who owns it.
+    """
+
     session = DBSession()
-    if isLoggedIn(login_session) is False:
-        return redirect(url_for('showLogin'))
-    else:
-        if request.method == 'GET':
-            categories = session.query(Category).all()
-            item = session.query(Item) \
-                .filter_by(category_name=category_name, name=item_name).one()
-            if item.user_id != login_session['user_id']:
-                return 'Access denied.'
-            return render_template(
-                'edit.html',
-                categories=categories,
-                isLoggedIn=isLoggedIn(login_session),
-                item=item
+    if request.method == 'GET':
+        categories = session.query(Category).all()
+        item = session.query(Item).filter_by(
+            category_name=category_name,
+            name=item_name
+        ).one_or_none()
+
+        # if the user does not own it, return.
+        if item.user_id != login_session['user_id']:
+            return 'Access denied.'
+        return render_template(
+            'edit.html',
+            categories=categories,
+            isLoggedIn=isLoggedIn(login_session),
+            item=item
+        )
+    elif request.method == 'POST':
+        item = session.query(Item).filter_by(
+            category_name=category_name,
+            name=item_name
+        ).one_or_none()
+
+        # if the user does not own it, return.
+        if item.user_id != login_session['user_id']:
+            return 'Access denied.'
+        new_item_name = request.form.get('item_name')
+        new_item_description = request.form.get('item_description')
+        new_item_category = request.form.get('item_category')
+        item.category_name = new_item_category
+        item.name = new_item_name
+        item.description = new_item_description
+        session.commit()
+        return redirect(
+            url_for(
+                'showItems',
+                category_name=item.category_name,
+                item_name=item.name
             )
-        if request.method == 'POST':
-            item = session.query(Item) \
-                .filter_by(category_name=category_name, name=item_name).one()
-            if item.user_id != login_session['user_id']:
-                return 'Access denied.'
-            new_item_name = request.form.get('item_name')
-            new_item_description = request.form.get('item_description')
-            new_item_category = request.form.get('item_category')
-            item.category_name = new_item_category
-            item.name = new_item_name
-            item.description = new_item_description
-            session.commit()
-            return redirect(
-                url_for(
-                    'showItems',
-                    category_name=item.category_name,
-                    item_name=item.name
-                )
-            )
+        )
 
 
 @app.route('/categories/<string:category_name>/<string:item_name>/delete',
            methods=['GET', 'POST'])
+@login_required
 def deleteItem(category_name, item_name):
+    """ Delete an item.
+    An item can only be deleted by the user who owns it.
+    """
+
     session = DBSession()
-    if isLoggedIn(login_session) is False:
-        return redirect(url_for('showLogin'))
-    else:
-        if request.method == 'GET':
-            item = session.query(Item) \
-                .filter_by(category_name=category_name, name=item_name).one()
-            if item.user_id != login_session['user_id']:
-                return 'Access denied.'
-            return render_template(
-                'delete.html',
-                isLoggedIn=isLoggedIn(login_session),
-                item=item)
-        if request.method == 'POST':
-            item = session.query(Item) \
-                .filter_by(category_name=category_name, name=item_name).one()
-            if item.user_id != login_session['user_id']:
-                return 'Access denied.'
-            session.delete(item)
-            session.commit()
-            categories = session.query(Category).all()
-            items = session.query(Item).order_by("id desc").all()
-            return redirect(url_for('showLatest'))
+    if request.method == 'GET':
+        item = session.query(Item).filter_by(
+            category_name=category_name,
+            name=item_name
+        ).one_or_none()
+
+        # if the user does not own it, return.
+        if item.user_id != login_session['user_id']:
+            return 'Access denied.'
+        return render_template(
+            'delete.html',
+            isLoggedIn=isLoggedIn(login_session),
+            item=item)
+    if request.method == 'POST':
+        item = session.query(Item).filter_by(
+            category_name=category_name,
+            name=item_name
+        ).one_or_none()
+
+        # if the user does not own it, return.
+        if item.user_id != login_session['user_id']:
+            return 'Access denied.'
+        session.delete(item)
+        session.commit()
+        categories = session.query(Category).all()
+        items = session.query(Item).order_by("id desc").all()
+        return redirect(url_for('showLatest'))
 
 
 @app.route('/login')
@@ -269,6 +327,7 @@ def showLogin():
         random.choice(string.ascii_uppercase+string.digits) for x in xrange(32)
     )
     login_session['state'] = state
+    # dynamically render the google and facebook app id in FE page.
     return render_template(
         'login.html',
         state=state,
@@ -280,13 +339,25 @@ def showLogin():
 
 @app.route('/fbconnect', methods=['POST'])
 def fbconnect():
+    """
+    The connect flow is:
+    0. Check if the session token matched, if not then abandon.
+    1. Get access token from FE.
+    2. Exchange access token with FB.
+    3. Use the exchanged token to get user's info.
+    4. Store user's info in session.
+    5. Create the user data in DB if necessary.
+    """
+
     session = DBSession()
+    # CSRF protection
     if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameter.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
     access_token = request.data
 
+    # Exchange access token with FB
     url = 'https://graph.facebook.com/oauth/access_token?' \
         'grant_type=fb_exchange_token&client_id=%s&client_secret=%s&' \
         'fb_exchange_token=%s' % (FB_APP_ID, FB_APP_SECRET, access_token)
@@ -294,8 +365,15 @@ def fbconnect():
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
 
-    # Use token to get user info from API
-    userinfo_url = "https://graph.facebook.com/v2.8/me"
+    # Use token to get user's name, id and email from API
+    '''
+    Due to the formatting for the result from the server token
+    exchange we have to split the token first on commas and select the
+    first index which gives us the key : value for the server access
+    token then we split it on colons to pull out the actual token value
+    and replace the remaining quotes with nothing so that it can be used
+    directly in the graph api calls
+    '''
     token = result.split(',')[0].split(':')[1].replace('"', '')
 
     url = 'https://graph.facebook.com/v2.8/me?' \
@@ -328,6 +406,7 @@ def fbconnect():
         user_id = createUser(login_session)
     login_session['user_id'] = user_id
 
+    # return a welcome page to FE
     output = ''
     output += '<h1>Welcome, '
     output += login_session['username']
@@ -337,12 +416,25 @@ def fbconnect():
     output += ' " style = "width: 300px; height: 300px;border-radius: ' \
         '150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;">'
 
-    flash("Now logged in as %s" % login_session['username'])
     return output
 
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
+    """
+    The connect flow is:
+    0. Check if the session token matched, if not then abandon.
+    1. Get authorization code from FE.
+    2. Exchange the authorization code with Google for
+    credential (including access token).
+    3. If the access token is not valid, abort.
+    4. If the access token is not for this user, abort.
+    5. If the access token is not for this app, abort.
+    6. Get user info using access token.
+    7. Store user's info in session.
+    8. Create the user data in DB if necessary.
+    """
+
     session = DBSession()
     # Validate state token
     if request.args.get('state') != login_session['state']:
@@ -423,6 +515,7 @@ def gconnect():
         user_id = createUser(login_session)
     login_session['user_id'] = user_id
 
+    # return a welcome page to FE
     output = ''
     output += '<h1>Welcome, '
     output += login_session['username']
@@ -432,12 +525,19 @@ def gconnect():
     output += ' " style = "width: 300px; height: 300px;border-radius: ' \
         '150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;">'
 
-    flash("you are now logged in as %s" % login_session['username'])
     return output
 
 
 @app.route('/fbdisconnect')
 def fbdisconnect():
+    """
+    The disconnection flow is:
+    1. Get the facebook id and access token
+    2. Send a DELETE request to FB API
+    3. If successful, delete all the sessions
+    4. If failed, do not delete the session
+    """
+
     session = DBSession()
     facebook_id = login_session['facebook_id']
     # The access token must me included to successfully logout
@@ -465,6 +565,14 @@ def fbdisconnect():
 
 @app.route('/gdisconnect')
 def disconnect():
+    """
+    The disconnection flow is:
+    1. Get the access token
+    2. Send a GET request to Google API
+    3. If successful, delete all the sessions
+    4. If failed, do not delete the session
+    """
+
     session = DBSession()
     access_token = login_session.get('access_token')
     if access_token is None:
@@ -505,7 +613,7 @@ def logout():
 def getUserID(email):
     session = DBSession()
     try:
-        user = session.query(User).filter_by(email=email).one()
+        user = session.query(User).filter_by(email=email).one_or_none()
         return user.id
     except exc.SQLAlchemyError:
         return None
@@ -526,7 +634,8 @@ def createUser(login_session):
     )
     session.add(newUser)
     session.commit()
-    user = session.query(User).filter_by(email=login_session['email']).one()
+    user = session.query(User).filter_by(
+        email=login_session['email']).one_or_none()
     return user.id
 
 
