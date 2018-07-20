@@ -42,11 +42,11 @@
                 </div>
                 <div class="col-md-6" style="height: 100%; text-align: right;">
                     {% if isLoggedIn %}
-                        <button class="btn btn-primary" onclick="window.location.href = '{{ url_for('logout')}}'">Logout</button>
+                        <button class="btn btn-primary" onclick="window.location.href = '{{ url_for('oauth.logout')}}'">Logout</button>
                     {% elif hideLogin %}
             <!--            Intentionally left blank.-->
                     {% else %}
-                        <button class="btn btn-primary" onclick="window.location.href = '{{url_for('showLogin')}}'">Login</button>
+                        <button class="btn btn-primary" onclick="window.location.href = '{{url_for('oauth.showLogin')}}'">Login</button>
                     {% endif %}
                 </div>
             </div>
