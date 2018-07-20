@@ -35,6 +35,7 @@ DBSession = sessionmaker(bind=engine)
 
 oauth = Blueprint('oauth', __name__)
 
+
 def getUserID(email):
     session = DBSession()
     try:
@@ -62,6 +63,7 @@ def createUser(login_session):
     user = session.query(User).filter_by(
         email=login_session['email']).one_or_none()
     return user.id
+
 
 @oauth.route('/fbconnect', methods=['POST'])
 def fbconnect():

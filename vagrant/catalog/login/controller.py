@@ -16,6 +16,7 @@ auth = HTTPBasicAuth()
 
 login = Blueprint('login', __name__)
 
+
 # ADD @auth.verify_password decorator here
 @auth.verify_password
 def verify_passowrd(username_or_token, password):
@@ -67,6 +68,7 @@ def createUser():
     session.add(user)
     session.commit()
     return jsonify({'username': user.username}), 201
+
 
 @login.route('/categories.json')
 @auth.login_required
